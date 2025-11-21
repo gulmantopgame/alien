@@ -3,596 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пришельцы (2800 год) - Настольная игра</title>
+    <title>Пришельцы 2800 - Исправленная версия</title>
     <style>
         body {
-            background-color: #1a1a2e;
+            background-color: #0b0c15;
             color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+            user-select: none;
         }
         h1 {
             color: #ff0055;
-            text-shadow: 0 0 10px #ff0055;
-            margin-bottom: 10px;
+            text-shadow: 0 0 15px #ff0055;
+            margin-bottom: 5px;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
+            font-size: 1.8rem;
         }
-        #game-container {
+        #game-wrapper {
             position: relative;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-            border: 2px solid #444;
-            background: radial-gradient(circle at center, #2b2b40 0%, #0f0f1a 100%);
+            padding: 10px;
+            background: #1a1a2e;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            border: 1px solid #333;
         }
         canvas {
             display: block;
-            cursor: pointer;
+            cursor: crosshair;
+            background: radial-gradient(circle at 50% 50%, #232338 0%, #0a0a12 100%);
+            border-radius: 4px;
         }
         #ui-panel {
-            width: 100%;
-            max-width: 800px;
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
-            padding: 10px;
-            background: #16213e;
-            border: 1px solid #0f3460;
-            border-radius: 8px;
-        }
-        .score-box {
-            text-align: center;
-            font-size: 1.2em;
-        }
-        .score-val {
-            font-size: 2em;
-            font-weight: bold;
-        }
-        .earth { color: #00ccff; text-shadow: 0 0 5px #00ccff; }
-        .aliens { color: #ff3333; text-shadow: 0 0 5px #ff3333; }
-        
-        #status {
             margin-top: 10px;
-            font-size: 1.2em;
-            color: #fff;
-            text-align: center;
-            height: 30px;
+            padding: 15px;
+            background: #13141f;
+            border-top: 2px solid #333;
+            border-radius: 0 0 10px 10px;
+        }
+        .score-box { text-align: center; min-width: 80px; }
+        .score-val { font-size: 2em; font-weight: 800; line-height: 1; }
+        .label { font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; opacity: 0.8; }
+        .earth { color: #00eaff; text-shadow: 0 0 10px rgba(0, 234, 255, 0.5); }
+        .aliens { color: #ff2a2a; text-shadow: 0 0 10px rgba(255, 42, 42, 0.5); }
+        
+        .turn-indicator { 
+            color: #fff; font-size: 1em; margin: 5px 0 15px 0; 
+            padding: 5px 20px; border-radius: 20px; background: rgba(255,255,255,0.1); 
         }
         button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: #0f3460;
-            color: white;
-            border: 1px solid #00ccff;
-            cursor: pointer;
-            font-family: inherit;
-            text-transform: uppercase;
-            transition: 0.3s;
+            margin-top: 15px; padding: 10px 25px; background: transparent;
+            color: #ffd700; border: 1px solid #ffd700; cursor: pointer;
+            font-weight: bold; text-transform: uppercase; transition: 0.3s;
         }
-        button:hover {
-            background: #00ccff;
-            color: #000;
-            box-shadow: 0 0 15px #00ccff;
-        }
+        button:hover { background: #ffd700; color: #000; box-shadow: 0 0 15px #ffd700; }
+        
         #rules {
-            max-width: 800px;
-            margin-top: 30px;
-            font-size: 0.9em;
-            line-height: 1.4;
-            background: rgba(0,0,0,0.5);
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .energy-field-legend {
-            color: #ffd700; 
-            font-weight: bold;
+            max-width: 800px; margin-top: 20px; background: rgba(255, 255, 255, 0.05);
+            padding: 15px; border-radius: 8px; line-height: 1.5; font-size: 0.85em;
+            border-left: 4px solid #ffd700; color: #ccc;
         }
     </style>
 </head>
 <body>
 
-    <h1>Пришельцы: 2800</h1>
+    <h1>Пришельцы</h1>
+    <div class="turn-indicator" id="status">Ход: ПРИШЕЛЬЦЫ</div>
 
-    <div id="game-container">
-        <canvas id="board" width="900" height="500"></canvas>
+    <div id="game-wrapper">
+        <canvas id="board" width="820" height="640"></canvas>
+        
+        <div id="ui-panel">
+            <div class="score-box aliens">
+                <div class="label">Пришельцы</div>
+                <div class="score-val" id="score-aliens">0</div>
+            </div>
+            <div class="score-box">
+                <div class="label" style="color:#ffd700">Цель</div>
+                <div class="score-val" style="color:#fff">15</div>
+            </div>
+            <div class="score-box earth">
+                <div class="label">Земляне</div>
+                <div class="score-val" id="score-earth">0</div>
+            </div>
+        </div>
     </div>
 
-    <div id="status">Ход: Пришельцы</div>
-
-    <div id="ui-panel">
-        <div class="score-box aliens">
-            <div>ПРИШЕЛЬЦЫ</div>
-            <div class="score-val" id="score-aliens">0</div>
-        </div>
-        <div class="score-box">
-            <div>ЦЕЛЬ: 15</div>
-        </div>
-        <div class="score-box earth">
-            <div>ЗЕМЛЯНЕ</div>
-            <div class="score-val" id="score-earth">0</div>
-        </div>
-    </div>
-
-    <button onclick="game.reset()">Новая игра</button>
+    <button onclick="game.reset()">Начать заново</button>
 
     <div id="rules">
-        <h3>Правила:</h3>
-        <p>1. <strong>Цель:</strong> Набрать 15 очков первым.</p>
-        <p>2. <strong>Ход:</strong> Обычная фишка ходит на 1 клетку по линии. Рубить не обязательно, но выгодно.</p>
-        <p>3. <strong>Атака:</strong> Обычная фишка рубит, перепрыгивая через врага. За сбитую фишку +1 очко.</p>
-        <p>4. <span class="energy-field-legend">Энергетические поля (Желтые зоны):</span> В них нельзя просто войти. Туда можно попасть <strong>только срубив врага</strong>.</p>
-        <p>5. <strong>Летающая Тарелка:</strong> Попав в поле, фишка становится Тарелкой (+2 очка). Тарелка может прыгать через свои и чужие фишки, делать серии прыжков и перемещаться между полями. Если Тарелка выйдет из зоны поля обычным ходом (не прыжком в другое поле), она теряет силу.</p>
+        <strong>Правила:</strong><br>
+        1. Обычный ход: на соседнюю точку по линии (включая черные точки).<br>
+        2. <strong>Энергетические поля (Желтые зоны):</strong> В них нельзя войти обычным шагом. Туда можно попасть <strong>только срубив врага</strong> (прыжком).<br>
+        3. Попав в поле, корабль становится Тарелкой (+2 очка). Тарелка прыгает на любое расстояние.<br>
+        4. Цель: набрать 15 очков.
     </div>
 
 <script>
-// Константы игры
+// КОНСТАНТЫ
 const COLS = 9;
-const ROWS = 5;
-const CELL_SIZE = 100;
-const RADIUS = 30;
+const ROWS = 7;
+const CELL_SIZE_X = 85;
+const CELL_SIZE_Y = 85;
+const OFFSET_X = 70;
+const OFFSET_Y = 65;
+const RADIUS = 20;
 
-// Определяем зоны Энергетических Полей (координаты X, Y)
-// Согласно картинке, это примерно центры левой части, центра и правой части
-const ENERGY_FIELDS = [
-    {x: 2, y: 2},
-    {x: 4, y: 2},
-    {x: 6, y: 2}
+// Определяем координаты Энергетических Полей (y, x)
+// Ряд 2 (индекс 2): 4 поля
+// Ряд 3 (индекс 3): 3 поля
+// Ряд 4 (индекс 4): 4 поля
+const ENERGY_FIELDS_COORDS = [
+    // Ряд 2 (от пришельцев)
+    {x: 1, y: 2}, {x: 3, y: 2}, {x: 5, y: 2}, {x: 7, y: 2},
+    // Ряд 3 (центр)
+    {x: 2, y: 3}, {x: 4, y: 3}, {x: 6, y: 3},
+    // Ряд 4 (к землянам)
+    {x: 1, y: 4}, {x: 3, y: 4}, {x: 5, y: 4}, {x: 7, y: 4}
 ];
 
-const PLAYER_ALIENS = 1; // Красные, сверху
-const PLAYER_EARTH = 2;  // Синие, снизу
+const TEAM_ALIENS = 1;
+const TEAM_EARTH = 2;
+
+// Типы фишек
+const T_NONE = 0;
+const T_ALIEN = 1;
+const T_EARTH = 2;
+const T_SAUCER_ALIEN = 3;
+const T_SAUCER_EARTH = 4;
 
 class Game {
     constructor() {
         this.canvas = document.getElementById('board');
         this.ctx = this.canvas.getContext('2d');
-        this.statusEl = document.getElementById('status');
-        this.scoreAEl = document.getElementById('score-aliens');
-        this.scoreEEl = document.getElementById('score-earth');
-        
-        // Обработка кликов
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
+        this.uiStatus = document.getElementById('status');
+        this.uiScoreA = document.getElementById('score-aliens');
+        this.uiScoreE = document.getElementById('score-earth');
 
+        this.canvas.addEventListener('mousedown', (e) => this.handleClick(e));
         this.reset();
     }
 
     reset() {
-        this.board = []; // 0: пусто, 1: пришелец, 2: землянин, 3: НЛО пришелец, 4: НЛО землянин
-        this.turn = PLAYER_ALIENS;
-        this.scores = { [PLAYER_ALIENS]: 0, [PLAYER_EARTH]: 0 };
-        this.selected = null; // {x, y}
-        this.possibleMoves = []; // [{toX, toY, type, captured: {x,y}}]
+        this.board = []; 
+        this.scores = { [TEAM_ALIENS]: 0, [TEAM_EARTH]: 0 };
+        this.turn = TEAM_ALIENS;
         this.gameOver = false;
-        this.mustContinueJump = null; // Если фишка в процессе серии прыжков
-
-        this.initBoard();
+        this.selected = null;
+        this.validMoves = [];
+        
+        // Инициализация доски (полная сетка 7x9)
+        for(let y=0; y<ROWS; y++) {
+            let row = [];
+            for(let x=0; x<COLS; x++) {
+                // Расстановка фигур
+                if (y <= 1) row.push(T_ALIEN); // Первые 2 ряда - Пришельцы
+                else if (y >= 5) row.push(T_EARTH); // Последние 2 ряда - Земляне
+                else row.push(T_NONE); // Пусто
+            }
+            this.board.push(row);
+        }
+        
         this.draw();
         this.updateUI();
     }
 
-    initBoard() {
-        // Создаем сетку
-        for (let y = 0; y < ROWS; y++) {
-            let row = [];
-            for (let x = 0; x < COLS; x++) {
-                // Пришельцы: ряды 0 и 1
-                if (y < 2) row.push(1);
-                // Земляне: ряды 3 и 4
-                else if (y > 2) row.push(2);
-                // Пустой центр
-                else row.push(0);
-            }
-            this.board.push(row);
-        }
-    }
-
+    // Проверка: является ли координата Энергетическим Полем
     isEnergyField(x, y) {
-        return ENERGY_FIELDS.some(f => f.x === x && f.y === y);
+        return ENERGY_FIELDS_COORDS.some(f => f.x === x && f.y === y);
     }
 
     getPiece(x, y) {
-        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return -1;
+        if (y < 0 || y >= ROWS || x < 0 || x >= COLS) return -1;
         return this.board[y][x];
     }
 
+    isSaucer(p) { return p === T_SAUCER_ALIEN || p === T_SAUCER_EARTH; }
+
     isEnemy(p1, p2) {
-        if (p1 === 0 || p2 === 0) return false;
-        // 1 и 3 - команда 1, 2 и 4 - команда 2
-        const team1 = (p1 === 1 || p1 === 3) ? 1 : 2;
-        const team2 = (p2 === 1 || p2 === 3) ? 1 : 2;
-        return team1 !== team2;
+        if (p1 <= 0 || p2 <= 0) return false;
+        const t1 = (p1 === T_ALIEN || p1 === T_SAUCER_ALIEN) ? TEAM_ALIENS : TEAM_EARTH;
+        const t2 = (p2 === T_ALIEN || p2 === T_SAUCER_ALIEN) ? TEAM_ALIENS : TEAM_EARTH;
+        return t1 !== t2;
     }
 
-    isOwn(p1, p2) {
-        if (p1 === 0 || p2 === 0) return false;
-        const team1 = (p1 === 1 || p1 === 3) ? 1 : 2;
-        const team2 = (p2 === 1 || p2 === 3) ? 1 : 2;
-        return team1 === team2;
+    getPixel(x, y) {
+        return { x: OFFSET_X + x * CELL_SIZE_X, y: OFFSET_Y + y * CELL_SIZE_Y };
     }
 
-    isSaucer(val) {
-        return val === 3 || val === 4;
-    }
-
-    // Проверка связанности узлов (все 8 направлений)
-    isConnected(x1, y1, x2, y2) {
-        const dx = Math.abs(x1 - x2);
-        const dy = Math.abs(y1 - y2);
-        return dx <= 1 && dy <= 1 && !(dx === 0 && dy === 0);
-    }
-
-    getValidMoves(x, y) {
+    getMoves(x, y) {
         let moves = [];
         const piece = this.board[y][x];
-        const isFS = this.isSaucer(piece);
+        const isS = this.isSaucer(piece);
 
-        // Направления для проверки (все 8)
-        const dirs = [
-            {dx:0, dy:1}, {dx:0, dy:-1}, {dx:1, dy:0}, {dx:-1, dy:0},
-            {dx:1, dy:1}, {dx:1, dy:-1}, {dx:-1, dy:1}, {dx:-1, dy:-1}
-        ];
+        // Направления (8 сторон)
+        const dirs = [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]];
 
         dirs.forEach(d => {
-            // 1. Обычный ход (шаг)
-            // Если мы в процессе серии прыжков, обычный ход запрещен
-            if (!this.mustContinueJump) {
-                const tx = x + d.dx;
-                const ty = y + d.dy;
-                
-                if (this.getPiece(tx, ty) === 0) {
-                    // Правило: Вход в Энергополе только прыжком через врага.
-                    // Значит, обычным шагом в поле (isEnergyField) войти НЕЛЬЗЯ.
-                    // Но если мы УЖЕ в поле (isFS), то перемещаться внутри полей можно (если они смежные - но они далеко).
+            // --- Логика для ТАРЕЛКИ (Дальнобойная) ---
+            if (isS) {
+                let k = 1;
+                while(true) {
+                    const tx = x + d[0]*k;
+                    const ty = y + d[1]*k;
+                    const target = this.getPiece(tx, ty);
                     
-                    let canMove = true;
-                    if (this.isEnergyField(tx, ty)) {
-                         // В поле нельзя войти шагом
-                        canMove = false; 
-                        // Исключение: Если Тарелка прыгает из одного поля в другое? Нет, тут обычный шаг.
-                        // Тарелка внутри поля? Если она делает шаг и остается в поле (невозможно при текущей геометрии, поля далеко).
-                    }
-                    
-                    if (canMove) {
-                         moves.push({x: tx, y: ty, type: 'move'});
-                    }
-                }
-            }
+                    if (target === -1) break; // Конец доски
 
-            // 2. Прыжок (Атака или спец-прыжок тарелки)
-            // Проверяем соседа
-            const nx = x + d.dx;
-            const ny = y + d.dy;
-            const neighbor = this.getPiece(nx, ny);
-
-            if (neighbor !== -1 && neighbor !== 0) {
-                // Куда приземляемся
-                const lx = nx + d.dx;
-                const ly = ny + d.dy;
-
-                if (this.getPiece(lx, ly) === 0) {
-                    let isCapture = false;
-                    let isValidJump = false;
-
-                    // Обычная фишка: прыгает только через врага
-                    if (!isFS) {
-                        if (this.isEnemy(piece, neighbor)) {
-                            isValidJump = true;
-                            isCapture = true;
-                        }
-                    } 
-                    // Тарелка: прыгает через врага (рубит) ИЛИ через своего (транспорт)
-                    else {
-                        isValidJump = true; // Тарелка прыгает через всех
-                        if (this.isEnemy(piece, neighbor)) {
-                            isCapture = true;
-                        }
-                    }
-
-                    if (isValidJump) {
-                        // Проверка на вход в Энергополе
-                        // Вход разрешен только если рубим врага (по правилам)
-                        // "На поле фишка может войти, только перескочив через фишку противника"
-                        if (this.isEnergyField(lx, ly)) {
-                            if (!isCapture) isValidJump = false; // Нельзя прыгнуть через своего в поле
-                        }
-
-                        if (isValidJump) {
+                    if (target === T_NONE) {
+                        // Обычный ход тарелки
+                        // В поле можно войти только если ты уже в поле? Или тарелке можно?
+                        // Правила: "Тарелка... теряет свойства уходя с поля". 
+                        // Давайте разрешим тарелке ходить везде, но если она не рубит и не прыгает В поле - теряет силу.
+                        moves.push({x: tx, y: ty, type: 'move'});
+                    } else {
+                        // Препятствие. Проверяем прыжок.
+                        const lx = tx + d[0];
+                        const ly = ty + d[1];
+                        const landing = this.getPiece(lx, ly);
+                        
+                        if (landing === T_NONE) {
+                            // Прыжок тарелки (через своих или чужих)
+                            // Правило входа в поле: Только срубив врага (или перепрыгнув?).
+                            // Для тарелки правило входа упрощаем: она уже мощная.
                             moves.push({
                                 x: lx, y: ly, 
-                                type: isCapture ? 'capture' : 'jump', 
-                                capturedX: nx, capturedY: ny
+                                type: this.isEnemy(piece, target) ? 'capture' : 'jump',
+                                kx: tx, ky: ty
+                            });
+                        }
+                        break; // Дальше прыгать за 1 раз нельзя в этом цикле
+                    }
+                    k++;
+                }
+            } 
+            // --- Логика для ОБЫЧНОГО КОРАБЛЯ ---
+            else {
+                const tx = x + d[0];
+                const ty = y + d[1];
+                const target = this.getPiece(tx, ty);
+
+                if (target !== -1) {
+                    // 1. Шаг
+                    if (target === T_NONE) {
+                        // ВАЖНО: Нельзя войти в Энергополе простым шагом
+                        if (!this.isEnergyField(tx, ty)) {
+                            moves.push({x: tx, y: ty, type: 'move'});
+                        }
+                    } 
+                    // 2. Прыжок / Атака
+                    else if (this.isEnemy(piece, target)) {
+                        const lx = tx + d[0];
+                        const ly = ty + d[1];
+                        if (this.getPiece(lx, ly) === T_NONE) {
+                            moves.push({
+                                x: lx, y: ly, 
+                                type: 'capture',
+                                kx: tx, ky: ty
                             });
                         }
                     }
                 }
             }
         });
-
         return moves;
     }
 
     handleClick(e) {
         if (this.gameOver) return;
-
         const rect = this.canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
 
-        // Найти ближайший узел
-        let cx = Math.round((mx - 50) / CELL_SIZE);
-        let cy = Math.round((my - 50) / CELL_SIZE);
-
-        // Ограничение клика областью узла
-        const pixelX = 50 + cx * CELL_SIZE;
-        const pixelY = 50 + cy * CELL_SIZE;
-        const dist = Math.sqrt((mx-pixelX)**2 + (my-pixelY)**2);
-        
-        if (dist > RADIUS + 5) {
-            // Клик мимо узла - сброс, если не обязательный прыжок
-            if (!this.mustContinueJump) {
-                this.selected = null;
-                this.possibleMoves = [];
-                this.draw();
+        // Поиск ближайшего узла
+        let clickedNode = null;
+        for(let y=0; y<ROWS; y++) {
+            for(let x=0; x<COLS; x++) {
+                const p = this.getPixel(x, y);
+                const dist = Math.sqrt((mx-p.x)**2 + (my-p.y)**2);
+                if (dist < 35) clickedNode = {x, y};
             }
-            return;
         }
 
-        // Логика выбора
-        const piece = this.getPiece(cx, cy);
-        const isCurrentPlayerPiece = (this.turn === PLAYER_ALIENS && (piece === 1 || piece === 3)) ||
-                                     (this.turn === PLAYER_EARTH && (piece === 2 || piece === 4));
+        if (!clickedNode) return;
 
-        // 1. Если кликнули на свою фишку (и не залочены на серию прыжков)
-        if (isCurrentPlayerPiece && !this.mustContinueJump) {
-            this.selected = {x: cx, y: cy};
-            this.possibleMoves = this.getValidMoves(cx, cy);
+        const pVal = this.board[clickedNode.y][clickedNode.x];
+        const isOwn = (this.turn === TEAM_ALIENS && (pVal===1 || pVal===3)) ||
+                      (this.turn === TEAM_EARTH && (pVal===2 || pVal===4));
+
+        if (isOwn) {
+            this.selected = clickedNode;
+            this.validMoves = this.getMoves(clickedNode.x, clickedNode.y);
             this.draw();
-            return;
-        }
-
-        // 2. Если кликнули на возможный ход
-        const move = this.possibleMoves.find(m => m.x === cx && m.y === cy);
-        if (move) {
-            this.makeMove(move);
+        } else if (this.selected) {
+            const move = this.validMoves.find(m => m.x === clickedNode.x && m.y === clickedNode.y);
+            if (move) this.executeMove(move);
         }
     }
 
-    makeMove(move) {
-        const fromX = this.selected.x;
-        const fromY = this.selected.y;
-        let piece = this.board[fromY][fromX];
+    executeMove(move) {
+        const sx = this.selected.x;
+        const sy = this.selected.y;
+        let piece = this.board[sy][sx];
 
-        // Перемещение
-        this.board[fromY][fromX] = 0;
+        this.board[sy][sx] = T_NONE;
+        
+        if (move.type === 'capture') {
+            this.board[move.ky][move.kx] = T_NONE;
+            this.scores[this.turn]++;
+        }
+
+        // Логика полей и превращений
+        const inField = this.isEnergyField(move.x, move.y);
+        const wasInField = this.isEnergyField(sx, sy);
+        const isS = this.isSaucer(piece);
+
+        // Вход в поле -> Становится тарелкой
+        if (inField && !isS) {
+            this.scores[this.turn] += 2;
+            piece = (this.turn === TEAM_ALIENS) ? T_SAUCER_ALIEN : T_SAUCER_EARTH;
+        }
+
+        // Выход из поля -> Теряет силу (если не прыгает в другое поле)
+        // Если тарелка уходит с поля на обычную клетку
+        if (isS && wasInField && !inField) {
+            piece = (this.turn === TEAM_ALIENS) ? T_ALIEN : T_EARTH;
+        }
+
         this.board[move.y][move.x] = piece;
 
-        // Обработка захвата
-        let scoreGain = 0;
-        if (move.type === 'capture') {
-            this.board[move.capturedY][move.capturedX] = 0; // Удаляем сбитого
-            scoreGain += 1;
-        }
-
-        // Обработка Энергетического Поля
-        const landedInField = this.isEnergyField(move.x, move.y);
-        const wasInField = this.isEnergyField(fromX, fromY);
-        const isFS = this.isSaucer(piece);
-
-        // Вход в поле -> Превращение в НЛО
-        if (landedInField && !isFS) {
-            // Превращение!
-            this.board[move.y][move.x] = (piece === 1) ? 3 : 4;
-            piece = this.board[move.y][move.x]; // update ref
-            scoreGain += 2;
-            // Визуальный эффект (можно добавить позже)
-        }
-
-        // Выход из поля -> Потеря статуса (если это не перелет в другое поле, но тут они далеко)
-        if (isFS && wasInField && !landedInField) {
-            // "Летающая тарелка, уходя с поля, теряет свойства"
-            this.board[move.y][move.x] = (piece === 3) ? 1 : 2;
-        }
-        // Если была НЛО, не в поле, и приземлилась не в поле -> остается НЛО?
-        // Правила: "Уходя с поля... теряет". Значит, если она уже вне поля была НЛО (невозможно по правилам входа?), 
-        // или она стала НЛО и сразу выпрыгнула?
-        // По логике: статус НЛО сохраняется ТОЛЬКО пока ты прыгаешь внутри полей или стоишь на нем.
-        // А стоп: "Тарелка может стать ею вновь...". 
-        // Интерпретация: Тарелка существует только НА поле или в момент прыжка?
-        // Нет, обычно в таких играх статус сохраняется. Но текст: "Уходя с поля, теряет свойства".
-        // Значит, Тарелка - это турель. Сидит в бункере и стреляет. Если вышла - стала пехотой.
-        // НО: "За один ход тарелка может перескочить... прыгая с одного поля на другое".
-        // Значит, если прыжок заканчивается на ДРУГОМ поле, статус сохраняется.
-        // Если заканчивается в пустоте - теряется.
-
-        // Начисляем очки
-        if (scoreGain > 0) {
-            this.scores[this.turn] += scoreGain;
-        }
-
-        // Проверка серии прыжков
-        // Тарелка может делать серию. Обычная шашка в правилах не сказано явно про серию, 
-        // но обычно в шашечных играх есть серия. Разрешим серию, если был Capture.
-        
-        // Нюанс: Если мы стали Тарелкой только что, можем ли продолжать бить как Тарелка?
-        // Текст: "Войдя на это поле, корабль становится тарелкой...". Скорее всего ход завершается на входе.
-        // Для простоты: ход завершается при любом движении, кроме серии Тарелки (если реализуем сложно).
-        // Давайте сделаем простую версию: 1 действие = 1 ход. Без серий, чтобы не усложнять UI, так как правила 90-х часто "пошаговые".
-        // А, нет: "Тарелка за один ход может перескочить больше чем через одну фишку". Это серия.
-        
-        let canContinue = false;
-        if (this.isSaucer(this.board[move.y][move.x]) && (move.type === 'capture' || move.type === 'jump')) {
-             // Проверка, есть ли еще прыжки
-             // В этой версии JS упростим: один клик - один прыжок. 
-             // Если реализуем серии, нужно блокировать смену хода.
-        }
-
-        // Проверка победы
         if (this.scores[this.turn] >= 15) {
-            this.gameOver = true;
+            this.draw();
             this.updateUI();
-            alert((this.turn === PLAYER_ALIENS ? "ПРИШЕЛЬЦЫ" : "ЗЕМЛЯНЕ") + " ПОБЕДИЛИ!");
+            setTimeout(() => alert((this.turn === 1 ? "ПРИШЕЛЬЦЫ" : "ЗЕМЛЯНЕ") + " ПОБЕДИЛИ!"), 50);
+            this.gameOver = true;
             return;
         }
 
-        // Смена хода
-        this.turn = (this.turn === PLAYER_ALIENS) ? PLAYER_EARTH : PLAYER_ALIENS;
+        this.turn = (this.turn === TEAM_ALIENS) ? TEAM_EARTH : TEAM_ALIENS;
         this.selected = null;
-        this.possibleMoves = [];
-        
+        this.validMoves = [];
         this.draw();
         this.updateUI();
     }
 
     updateUI() {
-        this.scoreAEl.innerText = this.scores[PLAYER_ALIENS];
-        this.scoreEEl.innerText = this.scores[PLAYER_EARTH];
-        
-        let tName = this.turn === PLAYER_ALIENS ? "ПРИШЕЛЬЦЫ" : "ЗЕМЛЯНЕ";
-        this.statusEl.innerText = "Ход: " + tName;
-        this.statusEl.style.color = this.turn === PLAYER_ALIENS ? "#ff3333" : "#00ccff";
+        this.uiScoreA.innerText = this.scores[TEAM_ALIENS];
+        this.uiScoreE.innerText = this.scores[TEAM_EARTH];
+        this.uiStatus.innerText = "ХОД: " + (this.turn === TEAM_ALIENS ? "ПРИШЕЛЬЦЫ" : "ЗЕМЛЯНЕ");
+        this.uiStatus.style.background = this.turn === TEAM_ALIENS ? "rgba(255, 42, 42, 0.2)" : "rgba(0, 234, 255, 0.2)";
     }
 
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // 1. Рисуем линии сетки
-        this.ctx.strokeStyle = "#3a3a5c";
+        // 1. РИСУЕМ СЕТКУ (Линии)
         this.ctx.lineWidth = 2;
-        
-        // Горизонтальные, вертикальные, диагонали
-        // Проще всего нарисовать линии от каждого узла ко всем соседям
+        this.ctx.strokeStyle = "#2c2c45";
         for(let y=0; y<ROWS; y++) {
             for(let x=0; x<COLS; x++) {
-                const neighbors = [[1,0], [0,1], [1,1], [1,-1]]; // Только половина направлений, чтобы не дублировать
-                const px = 50 + x*CELL_SIZE;
-                const py = 50 + y*CELL_SIZE;
-
+                const p1 = this.getPixel(x, y);
+                const neighbors = [[1,0], [0,1], [1,1], [-1,1]];
+                
                 neighbors.forEach(d => {
                     const nx = x + d[0];
                     const ny = y + d[1];
-                    if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
+                    if (this.getPiece(nx, ny) !== -1) {
+                        const p2 = this.getPixel(nx, ny);
                         this.ctx.beginPath();
-                        this.ctx.moveTo(px, py);
-                        this.ctx.lineTo(50 + nx*CELL_SIZE, 50 + ny*CELL_SIZE);
+                        this.ctx.moveTo(p1.x, p1.y);
+                        this.ctx.lineTo(p2.x, p2.y);
                         this.ctx.stroke();
                     }
                 });
             }
         }
 
-        // 2. Рисуем Энергетические поля (подсветка)
-        ENERGY_FIELDS.forEach(f => {
-            const px = 50 + f.x*CELL_SIZE;
-            const py = 50 + f.y*CELL_SIZE;
+        // 2. ЭНЕРГЕТИЧЕСКИЕ ПОЛЯ (Подложка)
+        ENERGY_FIELDS_COORDS.forEach(f => {
+            const p = this.getPixel(f.x, f.y);
             
             // Свечение
-            const grad = this.ctx.createRadialGradient(px, py, 10, px, py, 50);
-            grad.addColorStop(0, "rgba(255, 215, 0, 0.3)");
-            grad.addColorStop(1, "rgba(255, 215, 0, 0)");
+            const grad = this.ctx.createRadialGradient(p.x, p.y, 10, p.x, p.y, 55);
+            grad.addColorStop(0, "rgba(255, 200, 0, 0.2)");
+            grad.addColorStop(1, "rgba(255, 200, 0, 0)");
             this.ctx.fillStyle = grad;
             this.ctx.beginPath();
-            this.ctx.arc(px, py, 60, 0, Math.PI*2);
+            this.ctx.arc(p.x, p.y, 60, 0, Math.PI*2);
             this.ctx.fill();
 
-            this.ctx.strokeStyle = "#ffd700";
-            this.ctx.lineWidth = 2;
+            // Контур поля
+            this.ctx.strokeStyle = "#d4af37";
+            this.ctx.lineWidth = 1.5;
             this.ctx.setLineDash([5, 5]);
             this.ctx.beginPath();
-            this.ctx.arc(px, py, 40, 0, Math.PI*2);
+            this.ctx.arc(p.x, p.y, 40, 0, Math.PI*2);
             this.ctx.stroke();
             this.ctx.setLineDash([]);
         });
 
-        // 3. Рисуем узлы (черные точки)
+        // 3. УЗЛЫ (Черные точки) и ФИШКИ
         for(let y=0; y<ROWS; y++) {
             for(let x=0; x<COLS; x++) {
-                const px = 50 + x*CELL_SIZE;
-                const py = 50 + y*CELL_SIZE;
-                this.ctx.fillStyle = "#000";
-                this.ctx.beginPath();
-                this.ctx.arc(px, py, 5, 0, Math.PI*2);
-                this.ctx.fill();
+                const p = this.getPixel(x, y);
+                
+                // Если это Энергополе, рисуем желтый центр, иначе черный
+                if (this.isEnergyField(x, y)) {
+                    this.ctx.fillStyle = "#d4af37";
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+                    this.ctx.fill();
+                } else {
+                    this.ctx.fillStyle = "#111"; // Обычный узел
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = "#333";
+                    this.ctx.stroke();
+                }
+
+                const val = this.board[y][x];
+                if (val !== T_NONE) {
+                    this.drawPiece(p.x, p.y, val, (this.selected && this.selected.x===x && this.selected.y===y));
+                }
             }
         }
 
-        // 4. Рисуем возможные ходы (подсветка)
-        this.possibleMoves.forEach(m => {
-            const px = 50 + m.x*CELL_SIZE;
-            const py = 50 + m.y*CELL_SIZE;
-            this.ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
-            if (m.type === 'capture') this.ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+        // 4. ПОДСВЕТКА ХОДОВ
+        this.validMoves.forEach(m => {
+            const p = this.getPixel(m.x, m.y);
+            this.ctx.fillStyle = (m.type === 'capture') ? "rgba(255, 50, 50, 0.6)" : "rgba(50, 255, 50, 0.4)";
             this.ctx.beginPath();
-            this.ctx.arc(px, py, 15, 0, Math.PI*2);
+            this.ctx.arc(p.x, p.y, 12, 0, Math.PI*2);
             this.ctx.fill();
         });
+    }
 
-        // 5. Рисуем фишки
-        for(let y=0; y<ROWS; y++) {
-            for(let x=0; x<COLS; x++) {
-                const val = this.board[y][x];
-                if (val === 0) continue;
+    drawPiece(x, y, type, isSelected) {
+        const color = (type === T_ALIEN || type === T_SAUCER_ALIEN) ? "#ff2a2a" : "#00eaff";
+        const isSaucer = (type === T_SAUCER_ALIEN || type === T_SAUCER_EARTH);
 
-                const px = 50 + x*CELL_SIZE;
-                const py = 50 + y*CELL_SIZE;
-                
-                // Цвет
-                let color = "#fff";
-                let stroke = "#fff";
-                if (val === 1 || val === 3) { color = "#ff3333"; stroke = "#880000"; } // Пришельцы
-                else { color = "#00ccff"; stroke = "#004488"; } // Земляне
-
-                // Выделение выбранной
-                if (this.selected && this.selected.x === x && this.selected.y === y) {
-                    this.ctx.shadowBlur = 20;
-                    this.ctx.shadowColor = "#fff";
-                } else {
-                    this.ctx.shadowBlur = 0;
-                }
-
-                // Тело фишки
-                this.ctx.fillStyle = color;
-                this.ctx.beginPath();
-                this.ctx.arc(px, py, RADIUS, 0, Math.PI*2);
-                this.ctx.fill();
-                
-                this.ctx.strokeStyle = stroke;
-                this.ctx.lineWidth = 3;
-                this.ctx.stroke();
-
-                // Если НЛО (Тарелка)
-                if (val === 3 || val === 4) {
-                    this.ctx.fillStyle = "#fff";
-                    this.ctx.beginPath();
-                    this.ctx.arc(px, py, RADIUS/2, 0, Math.PI*2); // Кабина
-                    this.ctx.fill();
-                    
-                    this.ctx.fillStyle = "#ffd700";
-                    this.ctx.font = "bold 20px Arial";
-                    this.ctx.textAlign = "center";
-                    this.ctx.textBaseline = "middle";
-                    this.ctx.fillText("★", px, py);
-                } else {
-                    // Обычный корабль - треугольник
-                    this.ctx.fillStyle = "#000";
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(px, py - 10);
-                    this.ctx.lineTo(px - 10, py + 10);
-                    this.ctx.lineTo(px + 10, py + 10);
-                    this.ctx.fill();
-                }
-                
-                this.ctx.shadowBlur = 0;
-            }
+        if (isSelected) {
+            this.ctx.shadowBlur = 20;
+            this.ctx.shadowColor = color;
         }
+
+        this.ctx.fillStyle = "#1a1a2e";
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeStyle = color;
+        
+        this.ctx.beginPath();
+        if (isSaucer) {
+            this.ctx.arc(x, y, RADIUS, 0, Math.PI*2);
+            this.ctx.fill();
+            this.ctx.stroke();
+            
+            this.ctx.fillStyle = color;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, RADIUS * 0.5, 0, Math.PI*2);
+            this.ctx.fill();
+            
+            this.ctx.fillStyle = "#fff";
+            this.ctx.font = "14px Arial";
+            this.ctx.textAlign = "center";
+            this.ctx.textBaseline = "middle";
+            this.ctx.fillText("★", x, y);
+        } else {
+            const dir = (type === T_ALIEN) ? 1 : -1;
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y + (RADIUS * dir));
+            this.ctx.lineTo(x - (RADIUS * 0.8), y - (RADIUS * 0.6 * dir));
+            this.ctx.lineTo(x + (RADIUS * 0.8), y - (RADIUS * 0.6 * dir));
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
+            
+            this.ctx.fillStyle = color;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 4, 0, Math.PI*2);
+            this.ctx.fill();
+        }
+        this.ctx.shadowBlur = 0;
     }
 }
 
-// Запуск
 const game = new Game();
-
 </script>
 </body>
 </html>
